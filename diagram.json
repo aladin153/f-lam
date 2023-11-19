@@ -1,10 +1,10 @@
 {
     "version": 1,
     "editor": "wokwi",
-    "author": "Zayen <alaedine.zayen@gmail.com>",
+    "author": "Alaeddine ZAYEN <alaedine.zayen@gmail.com>",
     "parts": [
         {
-            "type": "board-esp32-devkit-c-v4",
+            "type": "board-esp32-s2-devkitm-1",
             "id": "esp",
             "top": 0.59,
             "left": 0.67,

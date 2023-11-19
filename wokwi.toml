@@ -1,5 +1,5 @@
 [wokwi]
 version = 1
 gdbServerPort = 3333
-elf = "target/xtensa-esp32-espidf/debug/f-lam"
-firmware = "target/xtensa-esp32-espidf/debug/f-lam"
+elf = "target/xtensa-esp32s2-espidf/debug/f-lam"
+firmware = "target/xtensa-esp32s2-espidf/debug/f-lam"
