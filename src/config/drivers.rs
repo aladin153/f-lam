@@ -2,28 +2,31 @@ use esp_idf_hal::gpio::*;
 use esp_idf_hal::peripherals::Peripherals;
 
 pub struct Drivers<'a> {
-    pub board_led: Option<PinDriver<'a, Gpio2, Output>>,
+    pub board_led: PinDriver<'a, Gpio2, Output>,
+    pub input: PinDriver<'a, Gpio12, Input>,
 }
 
 impl<'a> Drivers<'a> {
     pub fn new() -> Self {
-        Self { board_led: None }
-    }
-
-    pub fn init(&mut self) {
         let peripherals = Peripherals::take().unwrap_or_else(|error| {
             panic!("Peripherals initialization issue : {:?}", error);
         });
 
-        let led_driver = PinDriver::output(peripherals.pins.gpio2);
+        let led_driver = PinDriver::output(peripherals.pins.gpio2).unwrap_or_else(|error| {
+            panic!("Unable to initialize gpio2 as an Output : {:?}", error);
+        });
 
-        match led_driver {
-            Ok(gpio2_led) => self.board_led = Some(gpio2_led),
-            Err(error) => {
-                log::error!("Unable to initialize gpio2 as an Output : {:?}", error);
-                // TODO : Error State
-            }
-        };
+        let mut input_driver = PinDriver::input(peripherals.pins.gpio12).unwrap_or_else(|error| {
+            panic!("Unable to initialize gpio12 as an Input : {:?}", error);
+        });
+        input_driver.set_pull(Pull::Down).unwrap_or_else(|error| {
+            panic!("Unable to apply Pull Down config to GPIO12 : {:?}", error);
+        });
+
+        Self {
+            board_led: led_driver,
+            input: input_driver,
+        }
     }
 }
 
