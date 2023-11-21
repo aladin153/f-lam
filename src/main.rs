@@ -14,22 +14,14 @@ fn main() {
     log::info!("Alaeddine ZAYEN!");
 
     let mut drivers: Drivers = Drivers::new();
-    drivers.init();
 
     loop {
-        drivers
-            .board_led
-            .as_mut()
-            .unwrap()
-            .set_high()
-            .expect("Error");
-        FreeRtos::delay_ms(1000);
-        drivers
-            .board_led
-            .as_mut()
-            .unwrap()
-            .set_low()
-            .expect("error");
-        FreeRtos::delay_ms(1000);
+        if drivers.input.is_high() {
+            drivers.board_led.set_high().expect("Error");
+            FreeRtos::delay_ms(50);
+        } else {
+            drivers.board_led.set_low().expect("error");
+            FreeRtos::delay_ms(50);
+        }
     }
 }
