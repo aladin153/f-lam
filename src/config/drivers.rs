@@ -1,12 +1,18 @@
 use esp_idf_hal::gpio::*;
 use esp_idf_hal::peripherals::Peripherals;
 
-pub struct Drivers<'a> {
-    pub board_led: PinDriver<'a, Gpio2, Output>,
-    pub input: PinDriver<'a, Gpio12, Input>,
+pub struct Drivers {
+    pub board_led: PinDriver<'static, Gpio2, Output>,
+    pub input: PinDriver<'static, Gpio12, Input>,
 }
 
-impl<'a> Drivers<'a> {
+unsafe impl Sync for Drivers {
+    // TODO
+}
+
+unsafe impl Send for Drivers {}
+
+impl Drivers {
     pub fn new() -> Self {
         let peripherals = Peripherals::take().unwrap_or_else(|error| {
             panic!("Peripherals initialization issue : {:?}", error);
@@ -30,7 +36,7 @@ impl<'a> Drivers<'a> {
     }
 }
 
-impl<'a> Default for Drivers<'a> {
+impl Default for Drivers {
     fn default() -> Self {
         Self::new()
     }
