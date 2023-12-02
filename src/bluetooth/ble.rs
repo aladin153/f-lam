@@ -1,4 +1,4 @@
-use crate::Drivers;
+
 use esp32_nimble::{utilities::BleUuid, uuid128, BLEDevice, NimbleProperties};
 use std::str;
 
@@ -8,9 +8,7 @@ const NOTIFYING_CHARACTERISTIC_UUID: BleUuid = uuid128!("a3c87500-8ed3-4bdf-8a39
 const WRITABLE_CHARACTERISTIC_UUID: BleUuid = uuid128!("3c9a3f00-8ed3-4bdf-8a39-a01bebede295");
 const ADVERTISING_NAME: &str = "Alaeddine ZAYEN";
 
-pub struct Ble {
-    drivers: Drivers,
-}
+pub struct Ble {}
 
 impl Ble {
     pub fn ble_data_callback(&mut self, data: &[u8]) {

@@ -1,12 +1,10 @@
+use std::sync::{Arc, Mutex, RwLock};
+pub mod anim;
 pub mod bluetooth;
-pub mod config;
-use bluetooth::ble::Ble;
-use config::drivers::Drivers;
-use smart_leds::colors::*;
-use smart_leds_trait::SmartLedsWrite;
-use ws2812_esp32_rmt_driver::Ws2812Esp32Rmt;
-
-pub struct FLAM {}
+pub mod io;
+mod utils;
+use crate::io::angel_eye::AngelEye;
+use io::inputs::LightInputSignals;
 
 fn main() {
     // It is necessary to call this function once. Otherwise some patches to the runtime
@@ -16,29 +14,25 @@ fn main() {
     // Bind the log crate to the ESP Logging facilities
     esp_idf_svc::log::EspLogger::initialize_default();
 
-    log::info!("Hello, world!");
-    log::info!("Alaeddine ZAYEN!");
+    let light_inputs: LightInputSignals = LightInputSignals::new();
 
-    let mut _drivers: Drivers = Drivers::new();
+    let angel_eye = Arc::new(Mutex::new(AngelEye::new()));
 
-    let ble = Ble::new(_drivers);
-    ble.init();
+    let inputs_rw_lock = Arc::new(RwLock::new(light_inputs.clone()));
 
-    let mut ws2812 = Ws2812Esp32Rmt::new(0, 27).unwrap();
+    log::info!("Starting angel eyes animation threads !!!");
 
-    println!("Start NeoPixel: Flashing Animation!");
+    (*angel_eye)
+        .lock()
+        .unwrap()
+        .play_turn_animation(angel_eye.clone(), inputs_rw_lock.clone());
 
-    loop {
-        let pixels = std::iter::repeat(ORANGE).take(45);
+    (*angel_eye)
+        .lock()
+        .unwrap()
+        .play_normal_mode_animation(angel_eye.clone(), inputs_rw_lock.clone());
 
-        ws2812.write(pixels).unwrap();
+    log::info!("Starting light inputs thread");
 
-        esp_idf_hal::delay::FreeRtos::delay_ms(1000);
-
-        let pixels = std::iter::repeat(BLACK).take(45);
-
-        ws2812.write(pixels).unwrap();
-
-        esp_idf_hal::delay::FreeRtos::delay_ms(1000);
-    }
+    light_inputs.start_thread(inputs_rw_lock);
 }

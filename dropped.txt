@@ -1,0 +1,188 @@
+//pub struct Drivers {
+//    pub board_led: PinDriver<'static, Gpio2, Output>,
+//}
+
+//unsafe impl Sync for Drivers {
+// TODO
+//}
+
+//unsafe impl Send for Drivers {}
+
+/*impl Drivers {
+    pub fn new() -> Self {
+        let peripherals = Peripherals::take().unwrap_or_else(|error| {
+            panic!("Peripherals initialization issue : {:?}", error);
+        });
+
+        let led_driver = PinDriver::output(peripherals.pins.gpio2).unwrap_or_else(|error| {
+            panic!("Unable to initialize gpio2 as an Output : {:?}", error);
+        });
+
+        let mut turn_right_signal =
+            PinDriver::input(peripherals.pins.gpio13).unwrap_or_else(|error| {
+                panic!("Unable to initialize gpio13 as an Input : {:?}", error);
+            });
+        turn_right_signal
+            .set_pull(Pull::Down)
+            .unwrap_or_else(|error| {
+                panic!("Unable to apply Pull Down config to GPIO13 : {:?}", error);
+            });
+
+        Self {
+            board_led: led_driver,
+            turn_left_signal,
+            turn_right_signal,
+        }
+    }
+
+    pub fn get_turning_direction(&self) -> TurnSignalStatus {
+        match (
+            self.turn_left_signal.is_high(),
+            self.turn_right_signal.is_high(),
+        ) {
+            (false, false) => TurnSignalStatus::Off,
+            (true, true) => TurnSignalStatus::HazardLight,
+            (true, false) => TurnSignalStatus::Left,
+            (false, true) => TurnSignalStatus::Right,
+        }
+    }
+
+    pub fn is_turn_on(&self) -> bool {
+        self.turn_left_signal.is_high() || self.turn_right_signal.is_high()
+    }
+}
+
+impl Default for Drivers {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+*/
+
+
+
+
+
+
+
+
+/*pub mod anim;
+pub mod bluetooth;
+pub mod config;
+use config::drivers::Drivers;
+use std::sync::Arc;
+use::std::thread;
+use esp_idf_svc::hal::delay::FreeRtos;
+
+//use crate::{anim::turn_light::TurnLightAnimation, config::angel_eye::AngelEye};
+
+pub struct FLAM {}
+
+fn main() {
+    // It is necessary to call this function once. Otherwise some patches to the runtime
+    // implemented by esp-idf-sys might not link properly. See https://github.com/esp-rs/esp-idf-template/issues/71
+    esp_idf_svc::sys::link_patches();
+
+    // Bind the log crate to the ESP Logging facilities
+    esp_idf_svc::log::EspLogger::initialize_default();
+
+    log::info!("Hello, world!");
+    log::info!("Alaeddine ZAYEN!");
+
+    //let (rx, tx) = mpsc::channel();
+    //let counter = Arc::new(std::sync::Mutex::new(0));
+
+    let drivers: Drivers = Drivers::new();
+    //log::info!("Strting driver thread from main");
+    //drivers.start_thread(counter.clone());
+    //let ble = Ble::new(drivers);
+    //ble.init();
+
+    let angel_eye = AngelEye::new();
+    //println!("Start NeoPixel: Flashing Animation!");
+    //angel_eye.start_thread();
+
+    /* let mut _elapsed_time = 0;
+    let timeout = 60;
+    angel_eye.set_animation(1);
+    angel_eye.play_animation();
+
+    angel_eye.set_animation(2);
+    angel_eye.play_animation();
+
+    angel_eye.set_animation(1);
+    angel_eye.play_animation();
+
+    angel_eye.set_animation(2);
+    angel_eye.play_animation(); */
+
+
+    //loop {
+       // log::error!("Result From Main");
+        //let a = *counter.lock().unwrap();
+        //log::error!("Result From Main : {}", a);
+
+       // esp_idf_hal::delay::FreeRtos::delay_ms(1000);
+    //}
+
+    loop {
+        println!("Hello From Main");
+        FreeRtos::delay_ms(2500);
+    }
+
+}*/
+
+
+
+
+    //let drivers: Drivers = Drivers::new();
+
+    // Create an u32 with an inital value of 0
+
+    // Move the initial value into the read-write lock which is wrapped into an atomic reference
+    // counter in order to allow safe sharing.
+
+
+
+
+
+
+        // Create a clone for each thread
+    //let producer_lock = rw_lock.clone();
+    //let consumer_id_lock = rw_lock.clone();
+    //let consumer_square_lock = rw_lock.clone();
+
+    /*let producer_thread = thread::spawn(move || {
+        loop {
+            // write() blocks this thread until write-exclusive access can be acquired and retuns an
+            // RAII guard upon completion
+            if let Ok(mut write_guard) = producer_lock.write() {
+                // the returned write_guard implements `Deref` giving us easy access to the target value
+                *write_guard += 1;
+
+                println!("Updated value: {}", *write_guard);
+            }
+
+            // ^
+            // |   when the RAII guard goes out of the scope, write access will be dropped, allowing
+            // +~  other threads access the lock
+
+            sleep(Duration::from_millis(1000));
+        }
+    });*/
+
+
+
+
+        // A second reader thread is printing the squared value to the screen. Note that readers don't
+    // block each other so `consumer_square_thread` can run simultaneously with `consumer_id_lock`.
+    /*let consumer_square_thread = thread::spawn(move || {
+        loop {
+            if let Ok(lock) = consumer_square_lock.read() {
+                let value = *lock;
+                println!("Read value squared: {}", value * value);
+            }
+
+            sleep(Duration::from_millis(750));
+        }
+    });*/
