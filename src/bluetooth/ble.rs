@@ -1,3 +1,8 @@
+use crate::{bluetooth::handler::handle_ble_data, MailBox};
+use esp32_nimble::utilities::mutex::Mutex; // todo
+use esp_idf_hal::delay::FreeRtos;
+use esp_idf_sys::{self as _};
+use std::sync::Arc;
 
 use esp32_nimble::{utilities::BleUuid, uuid128, BLEDevice, NimbleProperties};
 use std::str;
@@ -8,26 +13,21 @@ const NOTIFYING_CHARACTERISTIC_UUID: BleUuid = uuid128!("a3c87500-8ed3-4bdf-8a39
 const WRITABLE_CHARACTERISTIC_UUID: BleUuid = uuid128!("3c9a3f00-8ed3-4bdf-8a39-a01bebede295");
 const ADVERTISING_NAME: &str = "Alaeddine ZAYEN";
 
-pub struct Ble {}
+#[derive(Clone)]
+pub struct Ble {
+    pub data: [u8; 50], // TODO
+}
 
 impl Ble {
-    pub fn ble_data_callback(&mut self, data: &[u8]) {
-        log::info!("handle_ble_callback");
-        let data = str::from_utf8(data);
-        let res = data.unwrap();
-        log::info!("BLE Received Data = {}", data.unwrap());
-        if res.eq("LEDON") {
-            self.drivers.board_led.set_high().expect("Error");
-        } else if res.eq("LEDOFF") {
-            self.drivers.board_led.set_low().expect("error");
+    pub fn new() -> Self {
+        Self {
+            data: [0; 50], // Todo
         }
     }
 
-    pub fn new(drivers: Drivers) -> Self {
-        Self { drivers }
-    }
-    pub fn init(mut self) {
-        // TODO
+    pub fn init(&self, mailbox: Arc<Mutex<MailBox>>) {
+        ::log::info!("Init ble");
+
         let ble_device = BLEDevice::take();
 
         let server = ble_device.get_server();
@@ -72,15 +72,39 @@ impl Ble {
                 ::log::info!("Read from writable characteristic.");
             })
             .on_write(move |args| {
-                ::log::info!("Wrote to writable characteristic: {:?}", args.recv_data);
-                self.ble_data_callback(args.recv_data);
+                println!("Wrote to writable characteristic: {:?}", args.recv_data);
+
+                handle_ble_data(args.recv_data, mailbox.clone()); // TODO : Rework Handler
             });
 
         let ble_advertising = ble_device.get_advertising();
+
         ble_advertising
             .name(ADVERTISING_NAME)
             .add_service_uuid(SERVICE_UUID);
 
-        ble_advertising.start().unwrap();
+        ble_advertising.start().expect("ALADIN UNWRAP"); // TODO
+    }
+}
+
+impl Default for Ble {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// # Safety
+/// Initialize ble and wait for received data
+pub unsafe extern "C" fn ble_task(test: *mut core::ffi::c_void) {
+    println!("Bluetooth Low Energy Entered");
+    FreeRtos::delay_ms(2000);
+
+    let ptr2 = test as *mut Arc<Mutex<MailBox>>; // TODO
+    let p2: &Arc<Mutex<MailBox>> = &*ptr2; // TODO
+
+    let ble: Ble = Ble::new();
+    ble.init(p2.clone()); // Contains Loop
+    loop {
+        FreeRtos::delay_ms(1000);
     }
 }

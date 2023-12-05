@@ -81,14 +81,12 @@ impl<T: TimeoutValue> Timeout<T> {
     }
 }
 
-// TODO : Run Unit Tests on a esp32 connected board.
-// Otherwise remove swut code
+// Tested with Rust online compiler.
 #[cfg(test)]
 mod tests {
     use super::*;
     #[test]
     fn test_bool_timeout_zero() {
-        // TODO : Run UT
         let mut timeout_val = Timeout::new(BinayLevel::High);
         assert_eq!(timeout_val.step(true, 3, 3).status(), ValueWithTimeout::On);
         assert_eq!(timeout_val.step(true, 3, 3).status(), ValueWithTimeout::On);
