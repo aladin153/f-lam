@@ -13,4 +13,5 @@ pub trait TurnLightAnimation {
 
 pub trait NormalModeAnimation {
     fn static_color(this: Arc<Mutex<AngelEye>>, msg: Arc<Mutex<MailBox>>);
+    fn hsv_rainbow(this: Arc<Mutex<AngelEye>>, msg: Arc<Mutex<MailBox>>);
 }
