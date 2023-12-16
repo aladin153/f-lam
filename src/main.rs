@@ -1,56 +1,21 @@
 pub mod anim;
 pub mod bluetooth;
 pub mod io;
+pub mod storage;
 mod utils;
 use crate::io::inputs;
+use crate::utils::mailbox::MailBox;
 use esp32_nimble::utilities::mutex::Mutex;
 use esp_idf_hal::delay::FreeRtos;
 use esp_idf_sys::xTaskCreatePinnedToCore;
 use esp_idf_sys::{self as _};
-use smart_leds::colors::RED;
-use smart_leds_trait::RGB8;
 use std::ffi::CString;
 use std::sync::Arc;
-use utils::timeout::ValueWithTimeout;
+use utils::calib::Calib;
+use utils::config::Config;
 
-pub struct MailBox {
-    // TODO
-    pub data: bool,
-    pub left_side_signal: bool,
-    pub right_side_signal: bool,
-    pub low_beam: bool,
-    pub left_turn_signal: ValueWithTimeout,
-    pub right_turn_signal: ValueWithTimeout,
-    pub ble_data0: u8,
-    pub ble_data1: u8,
-    pub ble_data2: u8,
-    pub ble_data3: u8,
-    pub normal_mode_color: RGB8,
-}
-
-impl MailBox {
-    pub fn new() -> Self {
-        Self {
-            data: false,
-            left_side_signal: false,
-            right_side_signal: false,
-            low_beam: false,
-            left_turn_signal: ValueWithTimeout::Off,
-            right_turn_signal: ValueWithTimeout::Off,
-            ble_data0: 0,
-            ble_data1: 0,
-            ble_data2: 0,
-            ble_data3: 0,
-            normal_mode_color: RED, // TODO From Config
-        }
-    }
-}
-
-impl Default for MailBox {
-    fn default() -> Self {
-        Self::new()
-    }
-}
+use esp_idf_svc::log::EspLogger;
+use esp_idf_svc::nvs::*;
 
 fn main() -> anyhow::Result<()> {
     // It is necessary to call this function once. Otherwise some patches to the runtime
@@ -58,6 +23,23 @@ fn main() -> anyhow::Result<()> {
     esp_idf_sys::link_patches();
 
     let arc_aladin = Arc::new(Mutex::new(MailBox::new()));
+
+    // Nvm Initialization !!!!!!!!    TODO
+    EspLogger::initialize_default();
+
+    let nvs_default_partition: EspNvsPartition<NvsDefault> = EspDefaultNvsPartition::take()?;
+
+    let test_namespace = "test_ns";
+    let mut nvs = match EspNvs::new(nvs_default_partition, test_namespace, true) {
+        Ok(nvs) => {
+            log::info!("Got namespace {:?} from default partition", test_namespace);
+            nvs
+        }
+        Err(e) => panic!("Could't get namespace {:?}", e),
+    };
+
+    let _calib = Calib::new();
+    let _config = Config::new();
 
     //To C const void*.
     let ptr: *const Arc<Mutex<MailBox>> = &arc_aladin;
