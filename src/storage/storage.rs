@@ -1,15 +1,14 @@
 //use anyhow::Ok;
 
-use esp_idf_svc::log::EspLogger;
+use crate::storage::calib::Calib;
+use crate::storage::config::Config;
+use anyhow::{self, Error};
 use esp_idf_svc::nvs::*;
 use postcard::{from_bytes, to_vec};
-
+use std::mem;
 use serde::{Deserialize, Serialize, __private::Ok};
 
 use log::info;
-
-use crate::utils::calib::Calib;
-
 #[derive(Serialize, Deserialize, Debug)]
 struct StructToBeStored<'a> {
     some_bytes: &'a [u8],
@@ -21,10 +20,10 @@ pub trait Storage {
     fn save_element(&self) -> anyhow::Result<()>;
     fn read_element(&self) -> anyhow::Result<()>;
     fn save_all_data(&self, nvs: &mut EspNvs<NvsDefault>) -> anyhow::Result<()>;
-    fn read_all_saved_data(&self) -> anyhow::Result<()>;
+    fn read_all_saved_data(&mut self, nvs: &mut EspNvs<NvsDefault>) -> anyhow::Result<(), ()>;
 }
 
-impl Storage for Calib {
+/*impl Storage for Calib {
     fn save_element(&self) -> anyhow::Result<()> {
         todo!()
     }
@@ -34,6 +33,7 @@ impl Storage for Calib {
     }
 
     fn save_all_data(&self, nvs: &mut EspNvs<NvsDefault>) -> anyhow::Result<()> {
+        // TODO
         let key_raw_struct: &str = "test_raw_struct";
         {
             let key_raw_struct_data = StructToBeStored {
@@ -54,8 +54,107 @@ impl Storage for Calib {
         Ok(())
     }
 
-    fn read_all_saved_data(&self) -> anyhow::Result<()> {
+    fn read_all_saved_data(&self, nvs: &mut EspNvs<NvsDefault>) -> anyhow::Result<()> {
+        // TODO
+
+        println!("Read All Saved Data Function !!!!"); // TODO
+        let key_raw_struct: &str = "test_raw_struct"; // TODO COnst
+        let key_raw_struct_data: &mut [u8] = &mut [0; 100];
+
+        match nvs.get_raw(key_raw_struct, key_raw_struct_data) {
+            Ok(v) => {
+                println!("pfffffff");
+                if let Some(the_struct) = v {
+                    println!(
+                        "{:?} = {:?}",
+                        key_raw_struct,
+                        from_bytes::<StructToBeStored>(the_struct)
+                    );
+                    let mut s_safe: Option<&Calib> = None;
+                    let c_buf = the_struct.as_ptr();
+                    let s = c_buf as *mut Calib;
+                    unsafe {
+                        let ref s2 = *s;
+                        s_safe = Some(s2);
+                    }
+                    println!("here is the struct: {:?}", s_safe.unwrap());
+
+                    return Ok(s_safe.unwrap());
+                }
+            }
+            Err(e) => println!("Couldn't get key {} because {:?}", key_raw_struct, e),
+        };
+        Err(())
+    }
+}*/
+
+impl Storage for Config {
+    fn save_element(&self) -> anyhow::Result<()> {
         todo!()
+    }
+
+    fn read_element(&self) -> anyhow::Result<()> {
+        todo!()
+    }
+
+    fn save_all_data(&self, nvs: &mut EspNvs<NvsDefault>) -> anyhow::Result<()> {
+        // TODO
+
+        let key_raw_struct: &str = "config_struct";
+
+        match nvs.set_raw(
+            key_raw_struct,
+            &to_vec::<Config, 300>(&self).unwrap(), // TODO Replace 100 with const
+        ) {
+            Ok(_) => info!("Key {} updated", key_raw_struct),
+            Err(e) => info!("key {} not updated {:?}", key_raw_struct, e),
+        };
+
+        Ok(())
+    }
+
+    fn read_all_saved_data(&mut self, nvs: &mut EspNvs<NvsDefault>) -> anyhow::Result<(), ()> {
+        // TODO
+
+        println!("Read All Saved Data Function !!!!"); // TODO
+        let key_raw_struct: &str = "config_struct"; // TODO COnst
+        let key_raw_struct_data: &mut [u8] = &mut [0; mem::size_of::<Config>()];
+
+        match nvs.get_raw(key_raw_struct, key_raw_struct_data) {
+            Ok(v) => {
+                println!("pfffffff");
+                if let Some(the_struct) = v {
+                    println!(
+                        "{:?} = {:?}",
+                        key_raw_struct,
+                        from_bytes::<Config>(the_struct)
+                    );
+
+                    let mut x = from_bytes::<Config>(the_struct);
+                    //let mut s_safe: Option<&Config> = None;
+                    //let c_buf = the_struct.as_ptr();
+                    //let s = c_buf as *mut Config;
+                    //unsafe {
+                    //    let ref s2 = *s;
+                    //    s_safe = Some(s2);
+                    //}
+                    println!("here is the struct X: {:?}", x);
+                    if let Ok(config) = &mut x {
+                        // TODO self = config directly
+                        self.normal_mode_color = config.normal_mode_color.clone();
+                        self.blinking_color_on = config.blinking_color_on.clone();
+                        self.blinking_color_off = config.blinking_color_off.clone();
+                        self.turn_light_anim = config.turn_light_anim;
+                        self.normal_mode_anim = config.normal_mode_anim;
+                        return Ok(());  
+                    } else {
+                        return Err(());
+                    }
+                }
+            }
+            Err(e) => println!("Couldn't get key {} because {:?}", key_raw_struct, e),
+        };
+        Err(())
     }
 }
 

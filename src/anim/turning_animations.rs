@@ -21,8 +21,6 @@ impl TurnLightAnimation for AngelEye {
             let total_led_number = (*this).lock().total_led_nb;
             let pref_color = (*this).lock().normal_mode_color;
             loop {
-                log::info!("Turning Lights Thread");
-
                 let left = (*msg).lock().left_turn_signal;
                 let right = (*msg).lock().right_turn_signal;
 
@@ -30,15 +28,14 @@ impl TurnLightAnimation for AngelEye {
 
                 // TODO !!!!!: add Write Wrapper
                 if status == TurnSignalStatus::BothOff {
-                    log::info!("Turning Lights OFF");
                     let pixels = std::iter::repeat(color_off).take(total_led_number);
                     (*this).lock().driver.write(pixels).unwrap();
                 } else if status == TurnSignalStatus::HazardLight {
-                    log::info!("Hazard Lights ON");
+                    //log::info!("Hazard Lights ON");
                     let pixels = std::iter::repeat(color_on).take(total_led_number);
                     (*this).lock().driver.write(pixels).unwrap();
                 } else if status == TurnSignalStatus::LeftNormalRightOff {
-                    log::info!("Left Normal Right Off");
+                    //log::info!("Left Normal Right Off");
                     let pixels = if (*msg).lock().low_beam {
                         std::iter::repeat(pref_color).take(total_led_number / 2)
                     } else {
@@ -53,7 +50,7 @@ impl TurnLightAnimation for AngelEye {
                         )
                         .unwrap();
                 } else if status == TurnSignalStatus::LeftNormalRightOn {
-                    log::info!("Left Normal Right On");
+                    //log::info!("Left Normal Right On");
 
                     let pixels = if (*msg).lock().low_beam {
                         std::iter::repeat(pref_color).take(total_led_number / 2)
@@ -67,7 +64,7 @@ impl TurnLightAnimation for AngelEye {
                         .write(pixels.chain(std::iter::repeat(color_on).take(total_led_number / 2)))
                         .unwrap();
                 } else if status == TurnSignalStatus::LeftOffRightNormal {
-                    log::info!("Left Off Right Normal");
+                    //log::info!("Left Off Right Normal");
 
                     let right_iter = if (*msg).lock().low_beam {
                         std::iter::repeat(pref_color).take(total_led_number / 2)
@@ -85,13 +82,13 @@ impl TurnLightAnimation for AngelEye {
                         )
                         .unwrap();
                 } else if status == TurnSignalStatus::LeftOffRightOn {
-                    log::info!("Left Off Right On");
+                    //log::info!("Left Off Right On");
                     let pixels = std::iter::repeat(color_off)
                         .take(total_led_number / 2)
                         .chain(std::iter::repeat(color_on).take(total_led_number / 2));
                     (*this).lock().driver.write(pixels).unwrap();
                 } else if status == TurnSignalStatus::LeftOnRightNormal {
-                    log::info!("Left On Right Normal");
+                    //log::info!("Left On Right Normal");
 
                     let right_iter = if (*msg).lock().low_beam {
                         std::iter::repeat(pref_color).take(total_led_number / 2)
@@ -109,13 +106,13 @@ impl TurnLightAnimation for AngelEye {
                         )
                         .unwrap();
                 } else if status == TurnSignalStatus::LeftOnRightOff {
-                    log::info!("Left On Right Off");
+                    //log::info!("Left On Right Off");
                     let pixels = std::iter::repeat(color_on)
                         .take(total_led_number / 2)
                         .chain(std::iter::repeat(color_off).take(total_led_number / 2));
                     (*this).lock().driver.write(pixels).unwrap();
                 } else {
-                    log::info!("Condition handled by Normal Mode Animation");
+                    //log::info!("Condition handled by Normal Mode Animation");
                 }
 
                 esp_idf_hal::delay::FreeRtos::delay_ms(20);

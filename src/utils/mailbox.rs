@@ -1,6 +1,7 @@
+use crate::storage::config;
+use crate::utils::colors::*;
 use crate::utils::timeout::ValueWithTimeout;
-use smart_leds::colors::*;
-use smart_leds::RGB8;
+use crate::Config;
 pub struct MailBox {
     // TODO
     pub data: bool,
@@ -13,11 +14,12 @@ pub struct MailBox {
     pub ble_data1: u8,
     pub ble_data2: u8,
     pub ble_data3: u8,
-    pub normal_mode_color: RGB8,
+    pub normal_mode_color: Color,
+    pub saving_request: bool,
 }
 
 impl MailBox {
-    pub fn new() -> Self {
+    pub fn new(config: &Config) -> Self {
         Self {
             data: false,
             left_side_signal: false,
@@ -29,13 +31,14 @@ impl MailBox {
             ble_data1: 0,
             ble_data2: 0,
             ble_data3: 0,
-            normal_mode_color: RED, // TODO From Config
+            normal_mode_color: config.normal_mode_color.clone(), // TODO From Config
+            saving_request: false,
         }
     }
 }
 
-impl Default for MailBox {
-    fn default() -> Self {
-        Self::new()
-    }
-}
+//impl Default for MailBox {
+//    fn default() -> Self {
+//        Self::new()
+//    }
+//}

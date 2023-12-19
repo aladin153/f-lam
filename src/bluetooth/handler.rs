@@ -1,7 +1,6 @@
-use esp32_nimble::utilities::mutex::Mutex;
-use smart_leds_trait::RGB8;
-
+use crate::utils::colors::Color;
 use crate::MailBox;
+use esp32_nimble::utilities::mutex::Mutex;
 use std::sync::Arc;
 
 pub fn handle_ble_data(ble_data: &[u8], mailbox: Arc<Mutex<MailBox>>) {
@@ -16,11 +15,14 @@ pub fn handle_ble_data(ble_data: &[u8], mailbox: Arc<Mutex<MailBox>>) {
         // No Miising Bytes
 
         // TODO : Define Communication Protocol
-        (mailbox).lock().normal_mode_color = RGB8 {
+        (*mailbox).lock().normal_mode_color = Color {
             r: ble_data[2],
             g: ble_data[3],
             b: ble_data[4],
-        }
+        };
+
+        // Save Mailbox Configuration into NVS (Save the last selected color)  // TODO
+        (*mailbox).lock().saving_request = true;
     }
 
     (*mailbox).lock().ble_data0 = ble_data[0];

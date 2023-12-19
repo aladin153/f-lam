@@ -18,13 +18,14 @@ impl NormalModeAnimation for AngelEye {
             println!("Normal Mode Thread Start");
             let total_led_number = (*this).lock().total_led_nb;
             loop {
-                (*this).lock().normal_mode_color = (*msg).lock().normal_mode_color;
+                (*this).lock().normal_mode_color = (*msg).lock().normal_mode_color.to_rgb8();
 
                 if (*msg).lock().left_turn_signal == ValueWithTimeout::Timeout
                     && (*msg).lock().right_turn_signal == ValueWithTimeout::Timeout
                 {
                     let pixels = if (*msg).lock().low_beam {
-                        std::iter::repeat((*msg).lock().normal_mode_color).take(total_led_number)
+                        std::iter::repeat((*msg).lock().normal_mode_color.to_rgb8())
+                            .take(total_led_number)
                     } else {
                         std::iter::repeat(BLACK).take(total_led_number)
                     };

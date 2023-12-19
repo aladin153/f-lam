@@ -8,7 +8,7 @@ use crate::anim::NormalModeAnimation;
 use crate::anim::TurnLightAnimation;
 use crate::utils::timeout::ValueWithTimeout;
 use smart_leds::colors::*;
-use smart_leds_trait::RGB;
+use smart_leds::*;
 use ws2812_esp32_rmt_driver::{LedPixelEsp32Rmt, Ws2812Esp32Rmt};
 
 const RMT_CHANNEL_NUM: u8 = 0;

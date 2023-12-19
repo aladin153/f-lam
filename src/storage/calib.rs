@@ -1,5 +1,6 @@
-use crate::storage::storage;
+use serde::{Deserialize, Serialize};
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Calib {
     angel_eye_total_led: usize, // TODO
     turn_signal_timeout: u8,
@@ -13,3 +14,5 @@ impl Calib {
         }
     }
 }
+
+// TODO : Add method : Load Calib from NVS
