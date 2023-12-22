@@ -2,8 +2,8 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Calib {
-    angel_eye_total_led: usize, // TODO
-    turn_signal_timeout: u8,
+    pub angel_eye_total_led: usize, // TODO
+    pub turn_signal_timeout: u8,
 }
 
 impl Calib {

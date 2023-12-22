@@ -8,7 +8,6 @@ use super::NormalModeAnimation;
 use crate::io::angel_eye::AngelEye;
 use crate::utils::timeout::ValueWithTimeout;
 use esp_idf_sys::esp_random;
-use smart_leds::colors::BLACK;
 use smart_leds::hsv::hsv2rgb;
 use smart_leds::hsv::Hsv;
 use smart_leds::SmartLedsWrite;

@@ -1,4 +1,3 @@
-use crate::storage::config;
 use crate::utils::colors::*;
 use crate::utils::timeout::ValueWithTimeout;
 use crate::Config;

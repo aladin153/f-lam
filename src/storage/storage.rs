@@ -1,110 +1,35 @@
-//use anyhow::Ok;
+// TODO Fix all the logs.
+// Code Cleanup ( define const values, return errors, error handling in main)
+// Define and implement state machine on main function
+// Replace fixed struct size with mem::size_of
 
 use crate::storage::calib::Calib;
 use crate::storage::config::Config;
-use anyhow::{self, Error};
+use anyhow::{self};
 use esp_idf_svc::nvs::*;
 use postcard::{from_bytes, to_vec};
-use serde::{Deserialize, Serialize, __private::Ok};
+use serde::__private::Ok;
 use std::mem;
 
 use log::info;
-#[derive(Serialize, Deserialize, Debug)]
-struct StructToBeStored<'a> {
-    some_bytes: &'a [u8],
-    a_str: &'a str,
-    a_number: i16,
-}
 
 pub trait Storage {
-    fn save_element(&self) -> anyhow::Result<()>;
-    fn read_element(&self) -> anyhow::Result<()>;
+    const STRUCT_SIZE: usize;
     fn save_all_data(&self, nvs: &mut EspNvs<NvsDefault>) -> anyhow::Result<()>;
     fn read_all_saved_data(&mut self, nvs: &mut EspNvs<NvsDefault>) -> anyhow::Result<(), ()>;
 }
 
-/*impl Storage for Calib {
-    fn save_element(&self) -> anyhow::Result<()> {
-        todo!()
-    }
-
-    fn read_element(&self) -> anyhow::Result<()> {
-        todo!()
-    }
-
-    fn save_all_data(&self, nvs: &mut EspNvs<NvsDefault>) -> anyhow::Result<()> {
-        // TODO
-        let key_raw_struct: &str = "test_raw_struct";
-        {
-            let key_raw_struct_data = StructToBeStored {
-                some_bytes: &[1, 2, 3, 4],
-                a_str: "I'm a str inside a struct!",
-                a_number: 42,
-            };
-
-            match nvs.set_raw(
-                key_raw_struct,
-                &to_vec::<StructToBeStored, 100>(&key_raw_struct_data).unwrap(),
-            ) {
-                Ok(_) => info!("Key {} updated", key_raw_struct),
-                Err(e) => info!("key {} not updated {:?}", key_raw_struct, e),
-            };
-        }
-
-        Ok(())
-    }
-
-    fn read_all_saved_data(&self, nvs: &mut EspNvs<NvsDefault>) -> anyhow::Result<()> {
-        // TODO
-
-        println!("Read All Saved Data Function !!!!"); // TODO
-        let key_raw_struct: &str = "test_raw_struct"; // TODO COnst
-        let key_raw_struct_data: &mut [u8] = &mut [0; 100];
-
-        match nvs.get_raw(key_raw_struct, key_raw_struct_data) {
-            Ok(v) => {
-                println!("pfffffff");
-                if let Some(the_struct) = v {
-                    println!(
-                        "{:?} = {:?}",
-                        key_raw_struct,
-                        from_bytes::<StructToBeStored>(the_struct)
-                    );
-                    let mut s_safe: Option<&Calib> = None;
-                    let c_buf = the_struct.as_ptr();
-                    let s = c_buf as *mut Calib;
-                    unsafe {
-                        let ref s2 = *s;
-                        s_safe = Some(s2);
-                    }
-                    println!("here is the struct: {:?}", s_safe.unwrap());
-
-                    return Ok(s_safe.unwrap());
-                }
-            }
-            Err(e) => println!("Couldn't get key {} because {:?}", key_raw_struct, e),
-        };
-        Err(())
-    }
-}*/
-
-impl Storage for Config {
-    fn save_element(&self) -> anyhow::Result<()> {
-        todo!()
-    }
-
-    fn read_element(&self) -> anyhow::Result<()> {
-        todo!()
-    }
-
+impl Storage for Calib {
+    const STRUCT_SIZE: usize = mem::size_of::<Calib>();
+    //let x = Calib.STRUCT_SIZE + 5;
     fn save_all_data(&self, nvs: &mut EspNvs<NvsDefault>) -> anyhow::Result<()> {
         // TODO
 
-        let key_raw_struct: &str = "config_struct";
+        let key_raw_struct: &str = "calib_struct"; // TODO : const
 
         match nvs.set_raw(
             key_raw_struct,
-            &to_vec::<Config, 300>(&self).unwrap(), // TODO Replace 100 with const
+            &to_vec::<Calib, { Calib::STRUCT_SIZE }>(&self).unwrap(),
         ) {
             Ok(_) => info!("Key {} updated", key_raw_struct),
             Err(e) => info!("key {} not updated {:?}", key_raw_struct, e),
@@ -116,13 +41,64 @@ impl Storage for Config {
     fn read_all_saved_data(&mut self, nvs: &mut EspNvs<NvsDefault>) -> anyhow::Result<(), ()> {
         // TODO
 
-        println!("Read All Saved Data Function !!!!"); // TODO
-        let key_raw_struct: &str = "config_struct"; // TODO COnst
-        let key_raw_struct_data: &mut [u8] = &mut [0; mem::size_of::<Config>()];
+        println!("Read Calib from NVS"); // TODO
+        let key_raw_struct: &str = "calib_struct"; // TODO COnst
+        let key_raw_struct_data: &mut [u8] = &mut [0; Calib::STRUCT_SIZE];
 
         match nvs.get_raw(key_raw_struct, key_raw_struct_data) {
             Ok(v) => {
-                println!("pfffffff");
+                if let Some(the_struct) = v {
+                    println!(
+                        "{:?} = {:?}",
+                        key_raw_struct,
+                        from_bytes::<Calib>(the_struct)
+                    );
+
+                    let mut x = from_bytes::<Calib>(the_struct);
+                    println!("here is the struct X: {:?}", x);
+                    if let Ok(calib) = &mut x {
+                        // TODO self = calib directly
+                        self.angel_eye_total_led = calib.angel_eye_total_led.clone();
+                        self.turn_signal_timeout = calib.turn_signal_timeout.clone();
+                        return Ok(());
+                    } else {
+                        return Err(());
+                    }
+                }
+            }
+            Err(e) => println!("Couldn't get key {} because {:?}", key_raw_struct, e),
+        };
+        Err(())
+    }
+}
+
+impl Storage for Config {
+    const STRUCT_SIZE: usize = mem::size_of::<Config>();
+    fn save_all_data(&self, nvs: &mut EspNvs<NvsDefault>) -> anyhow::Result<()> {
+        // TODO
+
+        let key_raw_struct: &str = "config_struct";
+
+        match nvs.set_raw(
+            key_raw_struct,
+            &to_vec::<Config, { Config::STRUCT_SIZE }>(&self).unwrap(), // TODO Replace 100 with const
+        ) {
+            Ok(_) => info!("Key {} updated", key_raw_struct),
+            Err(e) => info!("key {} not updated {:?}", key_raw_struct, e),
+        };
+
+        Ok(())
+    }
+
+    fn read_all_saved_data(&mut self, nvs: &mut EspNvs<NvsDefault>) -> anyhow::Result<(), ()> {
+        // TODO
+
+        println!("Read Config from NVS"); // TODO
+        let key_raw_struct: &str = "config_struct"; // TODO COnst
+        let key_raw_struct_data: &mut [u8] = &mut [0; Config::STRUCT_SIZE];
+
+        match nvs.get_raw(key_raw_struct, key_raw_struct_data) {
+            Ok(v) => {
                 if let Some(the_struct) = v {
                     println!(
                         "{:?} = {:?}",
@@ -131,13 +107,6 @@ impl Storage for Config {
                     );
 
                     let mut x = from_bytes::<Config>(the_struct);
-                    //let mut s_safe: Option<&Config> = None;
-                    //let c_buf = the_struct.as_ptr();
-                    //let s = c_buf as *mut Config;
-                    //unsafe {
-                    //    let ref s2 = *s;
-                    //    s_safe = Some(s2);
-                    //}
                     println!("here is the struct X: {:?}", x);
                     if let Ok(config) = &mut x {
                         // TODO self = config directly
@@ -157,89 +126,3 @@ impl Storage for Config {
         Err(())
     }
 }
-
-/*  let key_raw_u8 = "test_raw_u8";
-{
-    let key_raw_u8_data: &[u8] = &[42];
-
-    match nvs.set_raw(key_raw_u8, key_raw_u8_data) {
-        Ok(_) => info!("Key updated"),
-        // You can find the meaning of the error codes in the output of the error branch in:
-        // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/error-codes.html
-        Err(e) => info!("Key not updated {:?}", e),
-    };
-}
-
-{
-    let key_raw_u8_data: &mut [u8] = &mut [u8::MAX];
-
-    match nvs.get_raw(key_raw_u8, key_raw_u8_data) {
-        Ok(v) => match v {
-            Some(vv) => info!("{:?} = {:?}", key_raw_u8, vv),
-            None => todo!(),
-        },
-        Err(e) => info!("Couldn't get key {} because{:?}", key_raw_u8, e),
-    };
-}
-
-let key_raw_str: &str = "test_raw_str";
-{
-    let key_raw_str_data = "Hello from the NVS (I'm raw)!";
-
-    match nvs.set_raw(
-        key_raw_str,
-        &to_vec::<&str, 100>(&key_raw_str_data).unwrap(),
-    ) {
-        Ok(_) => info!("Key {} updated", key_raw_str),
-        Err(e) => info!("Key {} not updated {:?}", key_raw_str, e),
-    };
-}
-
-{
-    let key_raw_str_data: &mut [u8] = &mut [0; 100];
-
-    match nvs.get_raw(key_raw_str, key_raw_str_data) {
-        Ok(v) => {
-            if let Some(the_str) = v {
-                info!("{:?} = {:?}", key_raw_str, from_bytes::<&str>(the_str));
-            }
-        }
-        Err(e) => info!("Couldn't get key {} because {:?}", key_raw_str, e),
-    };
-}
-
-let key_raw_struct: &str = "test_raw_struct";
-{
-    let key_raw_struct_data = StructToBeStored {
-        some_bytes: &[1, 2, 3, 4],
-        a_str: "I'm a str inside a struct!",
-        a_number: 42,
-    };
-
-    match nvs.set_raw(
-        key_raw_struct,
-        &to_vec::<StructToBeStored, 100>(&key_raw_struct_data).unwrap(),
-    ) {
-        Ok(_) => info!("Key {} updated", key_raw_str),
-        Err(e) => info!("key {} not updated {:?}", key_raw_str, e),
-    };
-}
-
-{
-    let key_raw_struct_data: &mut [u8] = &mut [0; 100];
-
-    match nvs.get_raw(key_raw_struct, key_raw_struct_data) {
-        Ok(v) => {
-            if let Some(the_struct) = v {
-                info!(
-                    "{:?} = {:?}",
-                    key_raw_str,
-                    from_bytes::<StructToBeStored>(the_struct)
-                )
-            }
-        }
-        Err(e) => info!("Couldn't get key {} because {:?}", key_raw_str, e),
-    };
-}
-
-Ok(()) */

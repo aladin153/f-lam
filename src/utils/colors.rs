@@ -42,11 +42,11 @@ pub const BLACK: RGB8 = RGB8 {
     g: 0x00,
     b: 0x00,
 };
-pub const RED: RGB8 = RGB8 {
+/*pub const RED: RGB8 = RGB8 {
     r: 0xFF,
     g: 0x00,
     b: 0x00,
-};
+};*/
 /*pub const MAROON:                   RGB8 = RGB8 { r: 0x80, g: 0x00, b: 0x00 };
 pub const YELLOW:                   RGB8 = RGB8 { r: 0xFF, g: 0xFF, b: 0x00 };
 pub const OLIVE:                    RGB8 = RGB8 { r: 0x80, g: 0x80, b: 0x00 };
@@ -80,11 +80,11 @@ pub const ORANGE_RED:               RGB8 = RGB8 { r: 0xFF, g: 0x45, b: 0x00 };
 pub const TOMATO:                   RGB8 = RGB8 { r: 0xFF, g: 0x63, b: 0x47 };
 pub const CORAL:                    RGB8 = RGB8 { r: 0xFF, g: 0x7f, b: 0x50 };
 pub const DARK_ORANGE:              RGB8 = RGB8 { r: 0xFF, g: 0x8C, b: 0x00 };*/
-pub const ORANGE: RGB8 = RGB8 {
+/*pub const ORANGE: RGB8 = RGB8 {
     r: 0xFF,
     g: 0xA5,
     b: 0x00,
-};
+};*/
 
 /*pub const LIGHT_YELLOW:             RGB8 = RGB8 { r: 0xFF, g: 0xFF, b: 0xE0 };
 pub const LEMON_CHIFFON:            RGB8 = RGB8 { r: 0xFF, g: 0xFA, b: 0xCD };

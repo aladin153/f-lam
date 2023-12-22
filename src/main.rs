@@ -12,7 +12,6 @@ use esp_idf_sys::xTaskCreatePinnedToCore;
 use esp_idf_sys::{self as _};
 use std::ffi::CString;
 use std::sync::Arc;
-use storage::calib::Calib;
 use storage::config::Config;
 
 use esp_idf_svc::log::EspLogger;
