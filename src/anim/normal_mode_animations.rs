@@ -7,7 +7,10 @@ use std::thread;
 use super::NormalModeAnimation;
 use crate::io::angel_eye::AngelEye;
 use crate::utils::timeout::ValueWithTimeout;
+use esp_idf_sys::esp_random;
 use smart_leds::colors::BLACK;
+use smart_leds::hsv::hsv2rgb;
+use smart_leds::hsv::Hsv;
 use smart_leds::SmartLedsWrite;
 
 impl NormalModeAnimation for AngelEye {
@@ -16,7 +19,7 @@ impl NormalModeAnimation for AngelEye {
         log::info!("Static Color Animation");
         thread::spawn(move || {
             println!("Normal Mode Thread Start");
-            let total_led_number = (*this).lock().total_led_nb;
+            /*let total_led_number = (*this).lock().total_led_nb;
             loop {
                 (*this).lock().normal_mode_color = (*msg).lock().normal_mode_color.to_rgb8();
 
@@ -34,6 +37,26 @@ impl NormalModeAnimation for AngelEye {
                 }
 
                 esp_idf_hal::delay::FreeRtos::delay_ms(30);
+            }*/
+
+            // TODO : To be moved to another method -----> Just for test
+            let mut hue = unsafe { esp_random() } as u8;
+            loop {
+                if (*msg).lock().left_turn_signal == ValueWithTimeout::Timeout
+                    && (*msg).lock().right_turn_signal == ValueWithTimeout::Timeout
+                {
+                    let pixels = std::iter::repeat(hsv2rgb(Hsv {
+                        hue,
+                        sat: 255,
+                        val: 8,
+                    }))
+                    .take(45);
+                    (*this).lock().driver.write(pixels).unwrap(); // Todo : Add Wrapper
+
+                    esp_idf_hal::delay::FreeRtos::delay_ms(100);
+
+                    hue = hue.wrapping_add(10);
+                }
             }
         });
     }

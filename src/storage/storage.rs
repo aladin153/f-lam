@@ -5,8 +5,8 @@ use crate::storage::config::Config;
 use anyhow::{self, Error};
 use esp_idf_svc::nvs::*;
 use postcard::{from_bytes, to_vec};
-use std::mem;
 use serde::{Deserialize, Serialize, __private::Ok};
+use std::mem;
 
 use log::info;
 #[derive(Serialize, Deserialize, Debug)]
@@ -146,7 +146,7 @@ impl Storage for Config {
                         self.blinking_color_off = config.blinking_color_off.clone();
                         self.turn_light_anim = config.turn_light_anim;
                         self.normal_mode_anim = config.normal_mode_anim;
-                        return Ok(());  
+                        return Ok(());
                     } else {
                         return Err(());
                     }

@@ -114,7 +114,10 @@ fn main() -> anyhow::Result<()> {
 
             let x = config.save_all_data(&mut nvs);
 
-            log::error!("Read Config after Save NVS = {:#?}", config.read_all_saved_data(&mut nvs));            
+            log::error!(
+                "Read Config after Save NVS = {:#?}",
+                config.read_all_saved_data(&mut nvs)
+            );
 
             arc_aladin.lock().saving_request = false;
         }
