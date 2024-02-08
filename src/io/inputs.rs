@@ -4,8 +4,10 @@ use crate::MailBox;
 use esp32_nimble::utilities::mutex::Mutex;
 use esp_idf_hal::delay::FreeRtos;
 use esp_idf_hal::gpio::*;
+use esp_idf_hal::peripheral::Peripheral;
 use esp_idf_hal::peripherals::Peripherals;
 use esp_idf_sys::{self as _};
+use std::borrow::BorrowMut;
 use std::sync::Arc;
 
 #[derive(Debug, Clone)]
@@ -60,76 +62,76 @@ impl LightInputSignals {
     // TODO : Pinout Struct
     pub fn init_drivers(mut self, data: Arc<Mutex<MailBox>>) {
         // TODO
-        let peripherals = Peripherals::take().unwrap_or_else(|error| {
-            panic!("Peripherals initialization issue : {:?}", error);
-        });
+        let mut binding = (*data).lock();
+        let peripherals: &mut Peripherals = binding.peripherals.borrow_mut();
+        unsafe {
+            let mut turn_left_signal = PinDriver::input(peripherals.pins.gpio12.clone_unchecked())
+                .unwrap_or_else(|error| {
+                    panic!("Unable to initialize gpio12 as an Input : {:?}", error);
+                });
+            turn_left_signal
+                .set_pull(Pull::Down)
+                .unwrap_or_else(|error| {
+                    panic!("Unable to apply Pull Down config to GPIO12 : {:?}", error);
+                });
 
-        let mut turn_left_signal =
-            PinDriver::input(peripherals.pins.gpio12).unwrap_or_else(|error| {
-                panic!("Unable to initialize gpio12 as an Input : {:?}", error);
-            });
-        turn_left_signal
-            .set_pull(Pull::Down)
-            .unwrap_or_else(|error| {
-                panic!("Unable to apply Pull Down config to GPIO12 : {:?}", error);
-            });
+            let mut turn_right_signal = PinDriver::input(peripherals.pins.gpio13.clone_unchecked())
+                .unwrap_or_else(|error| {
+                    panic!("Unable to initialize gpio13 as an Input : {:?}", error);
+                });
+            turn_right_signal
+                .set_pull(Pull::Down)
+                .unwrap_or_else(|error| {
+                    panic!("Unable to apply Pull Down config to GPIO13 : {:?}", error);
+                });
 
-        let mut turn_right_signal =
-            PinDriver::input(peripherals.pins.gpio13).unwrap_or_else(|error| {
-                panic!("Unable to initialize gpio13 as an Input : {:?}", error);
-            });
-        turn_right_signal
-            .set_pull(Pull::Down)
-            .unwrap_or_else(|error| {
-                panic!("Unable to apply Pull Down config to GPIO13 : {:?}", error);
-            });
+            let mut low_beam_signal = PinDriver::input(peripherals.pins.gpio14.clone_unchecked())
+                .unwrap_or_else(|error| {
+                    panic!("Unable to initialize gpio14 as an Input : {:?}", error);
+                });
+            low_beam_signal
+                .set_pull(Pull::Down)
+                .unwrap_or_else(|error| {
+                    panic!("Unable to apply Pull Down config to GPIO14 : {:?}", error);
+                });
 
-        let mut low_beam_signal =
-            PinDriver::input(peripherals.pins.gpio14).unwrap_or_else(|error| {
-                panic!("Unable to initialize gpio14 as an Input : {:?}", error);
-            });
-        low_beam_signal
-            .set_pull(Pull::Down)
-            .unwrap_or_else(|error| {
-                panic!("Unable to apply Pull Down config to GPIO14 : {:?}", error);
-            });
+            // TODO :Add Sidelight
+            let mut left_side_signal = PinDriver::input(peripherals.pins.gpio15.clone_unchecked())
+                .unwrap_or_else(|error| {
+                    // TODO : Not CAN pins or Angel Eye???
+                    panic!("Unable to initialize gpio15 as an Input : {:?}", error);
+                });
+            left_side_signal
+                .set_pull(Pull::Down)
+                .unwrap_or_else(|error| {
+                    panic!("Unable to apply Pull Down config to GPIO15 : {:?}", error);
+                });
 
-        // TODO :Add Sidelight
-        let mut left_side_signal =
-            PinDriver::input(peripherals.pins.gpio15).unwrap_or_else(|error| {
-                // TODO : Not CAN pins or Angel Eye???
-                panic!("Unable to initialize gpio15 as an Input : {:?}", error);
-            });
-        left_side_signal
-            .set_pull(Pull::Down)
-            .unwrap_or_else(|error| {
-                panic!("Unable to apply Pull Down config to GPIO15 : {:?}", error);
-            });
+            let mut right_side_signal = PinDriver::input(peripherals.pins.gpio16.clone_unchecked())
+                .unwrap_or_else(|error| {
+                    // TODO : Not CAN pins or Angel Eye???
+                    panic!("Unable to initialize gpio14 as an Input : {:?}", error);
+                });
+            right_side_signal
+                .set_pull(Pull::Down)
+                .unwrap_or_else(|error| {
+                    panic!("Unable to apply Pull Down config to GPIO16 : {:?}", error);
+                });
 
-        let mut right_side_signal =
-            PinDriver::input(peripherals.pins.gpio16).unwrap_or_else(|error| {
-                // TODO : Not CAN pins or Angel Eye???
-                panic!("Unable to initialize gpio14 as an Input : {:?}", error);
-            });
-        right_side_signal
-            .set_pull(Pull::Down)
-            .unwrap_or_else(|error| {
-                panic!("Unable to apply Pull Down config to GPIO16 : {:?}", error);
-            });
+            loop {
+                self.right_turn_light
+                    .step(turn_right_signal.is_high(), 0, 20);
+                self.left_turn_light.step(turn_left_signal.is_high(), 0, 20);
+                self.left_side_light = left_side_signal.is_high();
+                self.right_side_light = right_side_signal.is_high();
+                self.low_beam = low_beam_signal.is_high();
 
-        loop {
-            self.right_turn_light
-                .step(turn_right_signal.is_high(), 0, 20);
-            self.left_turn_light.step(turn_left_signal.is_high(), 0, 20);
-            self.left_side_light = left_side_signal.is_high();
-            self.right_side_light = right_side_signal.is_high();
-            self.low_beam = low_beam_signal.is_high();
-
-            (*data).lock().right_turn_signal = self.right_turn_light.status();
-            (*data).lock().left_turn_signal = self.left_turn_light.status();
-            //(*data).lock().
-            (*data).lock().low_beam = self.low_beam;
-            FreeRtos::delay_ms(30); // TODO
+                (*data).lock().right_turn_signal = self.right_turn_light.status();
+                (*data).lock().left_turn_signal = self.left_turn_light.status();
+                //(*data).lock().
+                (*data).lock().low_beam = self.low_beam;
+                FreeRtos::delay_ms(30); // TODO
+            }
         }
     }
 }

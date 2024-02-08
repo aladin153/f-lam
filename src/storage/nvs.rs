@@ -96,16 +96,18 @@ impl Nvs for Config {
 
         println!("Read Config from NVS"); // TODO
         let key_raw_struct_data: &mut [u8] = &mut [0; Config::STRUCT_SIZE];
-
+        println!("Aladin"); // TODO
         match nvs.get_raw(Config::KEY_RAW_STRUCT, key_raw_struct_data) {
             Ok(v) => {
+                println!("ALADIN OK"); // TODO
                 if let Some(the_struct) = v {
+                    println!("ALADIN 2"); // TODO
                     println!(
                         "{:?} = {:?}",
                         Config::KEY_RAW_STRUCT,
                         from_bytes::<Config>(the_struct)
                     );
-
+                    println!("ALADIN 3"); // TODO
                     let mut x = from_bytes::<Config>(the_struct);
                     println!("here is the struct X: {:?}", x);
                     if let Ok(config) = &mut x {
@@ -127,6 +129,7 @@ impl Nvs for Config {
                 e
             ),
         };
+        println!("ALADIN KO"); // TODO
         Err(CommonError::Test1) // TODO
     }
 }

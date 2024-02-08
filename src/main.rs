@@ -67,6 +67,7 @@ fn main() -> anyhow::Result<()> {
     let light_input_pc_name = CString::new("Task 3").unwrap();
     let ble_pc_name = CString::new("Task 4").unwrap();
     let angel_eye_pc_name = CString::new("Task 5").unwrap();
+    let devil_eye_pc_name = CString::new("Task 6").unwrap();
 
     unsafe {
         xTaskCreatePinnedToCore(
@@ -96,6 +97,18 @@ fn main() -> anyhow::Result<()> {
         xTaskCreatePinnedToCore(
             Some(io::angel_eye::angel_eye_task),
             angel_eye_pc_name.as_ptr(),
+            8000,
+            voidptr,
+            10,
+            std::ptr::null_mut(),
+            1,
+        );
+    }
+
+    unsafe {
+        xTaskCreatePinnedToCore(
+            Some(io::devil_eye::devil_eye_task),
+            devil_eye_pc_name.as_ptr(),
             8000,
             voidptr,
             10,

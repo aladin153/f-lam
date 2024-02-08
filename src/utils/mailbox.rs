@@ -1,8 +1,11 @@
+use esp_idf_hal::peripherals::Peripherals;
+
 use crate::utils::colors::*;
 use crate::utils::timeout::ValueWithTimeout;
 use crate::Config;
 pub struct MailBox {
     // TODO
+    pub peripherals: Peripherals,
     pub data: bool,
     pub left_side_signal: bool,
     pub right_side_signal: bool,
@@ -14,12 +17,16 @@ pub struct MailBox {
     pub ble_data2: u8,
     pub ble_data3: u8,
     pub normal_mode_color: Color,
+    //pub devil_eye_color: Color,
     pub saving_request: bool,
 }
 
 impl MailBox {
     pub fn new(config: &Config) -> Self {
         Self {
+            peripherals: Peripherals::take().unwrap_or_else(|error| {
+                panic!("Peripherals initialization issue : {:?}", error);
+            }),
             data: false,
             left_side_signal: false,
             right_side_signal: false,
@@ -31,6 +38,7 @@ impl MailBox {
             ble_data2: 0,
             ble_data3: 0,
             normal_mode_color: config.normal_mode_color.clone(), // TODO From Config
+            //devil_eye_color: config.devil_eye_color.clone(), // TODO From Config
             saving_request: false,
         }
     }
